@@ -1,23 +1,7 @@
 <template>
   <div class="roulette">
-    <div>roulette table</div>
+    <div>roulette table: {{ gameState }} || $${{ userCredit }}$$</div>
     <div id="chart1"></div>
-    <!-- <div>
-      <div
-        v-for="f in fieldOrder"
-        :key="f"
-        class="roulette__field"
-        :class="[
-          `roulette__field--${allFieldsMap.get(f)?.color}`,
-          highlightedFields.includes(f)
-            ? 'roulette__field--highlighted'
-            : undefined,
-        ]"
-      >
-        {{ allFieldsMap.get(f)?.number }}
-      </div>
-    </div> -->
-
     <div @click="rollBalls()">Roll ball</div>
   </div>
 </template>
@@ -33,8 +17,15 @@ import {
   FieldColor,
   redNumbers,
   fieldOrder,
+  type fieldNumber,
 } from "@/utils/roulette";
 import { getRandomArbitrary } from "@/utils/helper";
+import { GameState, useGameStore } from "@/stores/game";
+
+const gameStore = useGameStore();
+
+const gameState = computed(() => gameStore.getGameState);
+const userCredit = computed(() => gameStore.userCredits);
 
 //Load the charts library with a callback
 GoogleCharts.load(drawChart);
@@ -53,13 +44,14 @@ function drawChart() {
   const data = googlePieChartDataTable.value;
 
   const options = {
-    height: 1000,
+    height: 600,
+    width: 600,
     legend: "none",
     enableInteractivity: false,
     pieSliceText: "label",
     tooltip: { trigger: "none" },
     pieHole: 0.8,
-    colors: ["red", "black"],
+    colors: ["black", "red"],
     slices: { 0: { color: "green" } },
     pieStartAngle: -5,
   };
@@ -70,53 +62,6 @@ function drawChart() {
 
   roulette_chart.draw(data, options);
 }
-
-const blackNumbersFields = computed((): Field[] =>
-  blackNumbers.map((n) => {
-    return {
-      number: n,
-      color: FieldColor.BLACK,
-      highlighted: false,
-    };
-  })
-);
-
-const redNumbersFields = computed((): Field[] =>
-  redNumbers.map((n) => {
-    return {
-      number: n,
-      color: FieldColor.RED,
-      highlighted: false,
-    };
-  })
-);
-
-const allFields = computed((): Field[] => [
-  {
-    number: 0,
-    color: FieldColor.BLANK,
-    highlighted: false,
-  },
-  ...blackNumbersFields.value,
-  ...redNumbersFields.value,
-]);
-
-const allFieldsMap = computed(() => {
-  const map: Map<number, Field> = new Map();
-  allFields.value.forEach((f) => map.set(f.number, f));
-  return map;
-});
-
-// user slected fields
-const selectedFields = ref<number[]>([]);
-// fields the balls are rolling on right now
-const rollingFields = ref<number[]>([]);
-// fields finally selected by the algorythm
-const resultFields = ref<number[]>([]);
-
-// fields highlighted in the ui
-// TODO: set game states in stae rolling -> rollingFields in state result = resultfields
-const highlightedFields = computed(() => rollingFields.value);
 
 /**
  * function to select numbers by random
@@ -130,6 +75,14 @@ async function rollBalls(
   intervall = 0.5,
   iteration = [1, 30]
 ): Promise<void> {
+  let selectedField: fieldNumber | undefined = undefined;
+
+  if (gameState.value !== GameState.placing) {
+    return;
+  }
+
+  gameStore.setGameState(GameState.rolling);
+
   const intervallSeconds = intervall * 1000;
   for (let i = 0; i < balls; i++) {
     const iterations = getRandomArbitrary(iteration[0], iteration[1]);
@@ -137,20 +90,25 @@ async function rollBalls(
     const delay = (ms: number | undefined) =>
       new Promise((resolve) => setTimeout(resolve, ms));
 
-    (async function loop() {
+    await (async function loop() {
       for (let j = 0; j < iterations; j++) {
         await delay(intervallSeconds);
-        rollingFields.value = [fieldOrder[j]];
+        selectedField = fieldOrder[j];
 
         roulette_chart.setSelection([{ row: j, column: null }]);
       }
     })();
   }
+
+  gameStore.setCurrentSelectedNumber(selectedField);
+  gameStore.setGameState(GameState.evaluation);
+  gameStore.evaluate();
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .roulette {
+  width: 100%;
   background-color: green;
 
   &__field {
