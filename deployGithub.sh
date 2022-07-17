@@ -3,6 +3,9 @@
 # abort on errors
 set -e
 
+# install yarn
+npm i yarn
+
 # build
 yarn build
 
