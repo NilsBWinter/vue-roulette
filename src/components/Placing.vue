@@ -1,53 +1,63 @@
 <template>
-  <div class="roulette">
-    <div class="field-container">
-      <div class="field-row">
-        <div @click="newBet([0])">0</div>
-      </div>
+  <div class="placing">
+    <div>
+      <h1 class="info">Welcome to Roulette. Phase: {{ gameState }}</h1>
+      <h2 class="credit">Your current Credit: {{ userCredit }}</h2>
+      <h3>Select a number or combination to select and click "roll"</h3>
+    </div>
 
-      <div class="field-row">
-        <div @click="newBet(passeNumbers)">Passe</div>
-        <div class="field-row__sub-fields">
-          <div v-for="n in premierNumbers" :key="n" @click="newBet([n])">{{ n }}</div>
+    <div class="placing__field">
+      <div class="field-container">
+        <div class="field-row">
+          <div @click="newBet([0])">0</div>
         </div>
-        <div @click="newBet(manqueNumbers)">Manque</div>
-      </div>
 
-      <div class="field-row">
-        <div @click="newBet(pairNumbers)">Pair</div>
-        <div class="field-row__sub-fields">
-          <div v-for="n in milieuNumbers" :key="n " @click="newBet([n])">
-            {{ n }}
+        <div class="field-row">
+          <div @click="newBet(passeNumbers)">Passe</div>
+          <div class="field-row__sub-fields">
+            <div v-for="n in premierNumbers" :key="n" @click="newBet([n])">
+              {{ n }}
+            </div>
           </div>
+          <div @click="newBet(manqueNumbers)">Manque</div>
         </div>
-        <div @click="newBet(impairNumbers)">Impair</div>
-      </div>
 
-      <div class="field-row">
-        <div @click="newBet(blackNumbers)">Black</div>
-        <div class="field-row__sub-fields">
-          <div v-for="n in dernierNumbers" :key="n" @click="newBet([n])">
-            {{ n }}
+        <div class="field-row">
+          <div @click="newBet(pairNumbers)">Pair</div>
+          <div class="field-row__sub-fields">
+            <div v-for="n in milieuNumbers" :key="n" @click="newBet([n])">
+              {{ n }}
+            </div>
           </div>
+          <div @click="newBet(impairNumbers)">Impair</div>
         </div>
-        <div @click="newBet(redNumbers)">Red</div>
-      </div>
 
-      <div class="field-row">
-        <div>
-          <div @click="newBet(premierNumbers)">12 P</div>
-          <div @click="newBet(milieuNumbers)">12 M</div>
-          <div @click="newBet(dernierNumbers)">12 D</div>
+        <div class="field-row">
+          <div @click="newBet(blackNumbers)">Black</div>
+          <div class="field-row__sub-fields">
+            <div v-for="n in dernierNumbers" :key="n" @click="newBet([n])">
+              {{ n }}
+            </div>
+          </div>
+          <div @click="newBet(redNumbers)">Red</div>
         </div>
-        <div>
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
-        <div>
-          <div @click="newBet(dernierNumbers)">12 D</div>
-          <div @click="newBet(milieuNumbers)">12 M</div>
-          <div @click="newBet(premierNumbers)">12 P</div>
+
+        <div class="field-row">
+          <div class="field-row__sub-fields">
+            <div @click="newBet(premierNumbers)">12 P</div>
+            <div @click="newBet(milieuNumbers)">12 M</div>
+            <div @click="newBet(dernierNumbers)">12 D</div>
+          </div>
+          <div class="field-row__sub-fields">
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <div class="field-row__sub-fields">
+            <div @click="newBet(dernierNumbers)">12 D</div>
+            <div @click="newBet(milieuNumbers)">12 M</div>
+            <div @click="newBet(premierNumbers)">12 P</div>
+          </div>
         </div>
       </div>
     </div>
@@ -74,6 +84,7 @@ import {
 const gameStore = useGameStore();
 
 const gameState = computed(() => gameStore.getGameState);
+const userCredit = computed(() => gameStore.userCredits);
 
 function newBet(fields: fieldNumber[]): void {
   const bet: UserBet = {
@@ -85,51 +96,71 @@ function newBet(fields: fieldNumber[]): void {
 </script>
 
 <style scoped lang="scss">
-.roulette {
+.placing {
   width: 100%;
-  background-color: green;
+  margin: 0 32px;
+
+  display: flex;
+  flex-flow: column;
+  justify-content: space-evenly;
 
   &__field {
-    color: white;
-    &--blank {
-      background: rgba(0, 0, 0, 0);
-    }
-
-    &--red {
-      background: rgba(255, 0, 0, 1);
-    }
-
-    &--black {
-      background: rgba(0, 0, 0, 1);
-    }
-
-    &--highlighted {
-      background-color: gold;
-    }
-  }
-
-  .field-row {
-    display: flex;
     width: 100%;
+    align-self: center;
+    background-color: green;
+    border: 2px solid black;
+    box-shadow: 5px 5px 5px rgba($color: #000000, $alpha: 0.3);
 
-    text-align: center;
+    .field-container {
+      background-color: green;
+      border: 2px solid gold;
+      border-radius: 4px;
+      width: 50%;
 
-    &:hover {
-      cursor: pointer;
-    }
+      margin-left: auto;
+      margin-right: auto;
+      .field-row {
+        display: flex;
+        width: 100%;
 
-    div {
-      width: 100%;
-      border: 1px solid gold;
-    }
+        text-align: center;
 
-    &__sub-fields {
-      display: grid;
+        border-bottom: 2px solid gold;
+        &:nth-last-child(1) {
+          border-bottom: 0;
+        }
+        &:hover {
+          cursor: pointer;
+        }
 
-      grid-template-columns: repeat(3, 1fr);
+        & > div {
+          width: 100%;
 
-      div {
-        border: 1px solid gold;
+          border-right: 2px solid gold;
+
+          &:nth-last-child(1) {
+            border-right: 0;
+          }
+        }
+
+        &__sub-fields {
+          display: grid;
+
+          grid-template-columns: repeat(3, 1fr);
+
+          div {
+            border-right: 2px solid gold;
+            border-bottom: 2px solid gold;
+
+            &:nth-child(3n) {
+              border-right: 0;
+            }
+
+            &:nth-last-child(-n + 3) {
+              border-bottom: 0;
+            }
+          }
+        }
       }
     }
   }

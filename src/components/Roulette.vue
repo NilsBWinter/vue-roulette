@@ -1,31 +1,22 @@
 <template>
   <div class="roulette">
-    <div>roulette table: {{ gameState }} || $${{ userCredit }}$$</div>
     <div id="chart1"></div>
-    <div @click="rollBalls()">Roll ball</div>
+    <div class="roulette__action" @click="rollBalls()">LETS ROLL</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 /// @ts-expect-error TODO
 import { GoogleCharts } from "google-charts";
 
-import {
-  type Field,
-  blackNumbers,
-  FieldColor,
-  redNumbers,
-  fieldOrder,
-  type fieldNumber,
-} from "@/utils/roulette";
+import { fieldOrder, type fieldNumber } from "@/utils/roulette";
 import { getRandomArbitrary } from "@/utils/helper";
 import { GameState, useGameStore } from "@/stores/game";
 
 const gameStore = useGameStore();
 
 const gameState = computed(() => gameStore.getGameState);
-const userCredit = computed(() => gameStore.userCredits);
 
 //Load the charts library with a callback
 GoogleCharts.load(drawChart);
@@ -44,8 +35,8 @@ function drawChart() {
   const data = googlePieChartDataTable.value;
 
   const options = {
-    height: 600,
-    width: 600,
+    height: 800,
+    width: 800,
     legend: "none",
     enableInteractivity: false,
     pieSliceText: "label",
@@ -54,6 +45,13 @@ function drawChart() {
     colors: ["black", "red"],
     slices: { 0: { color: "green" } },
     pieStartAngle: -5,
+    backgroundColor: "#ebebeb",
+    chartArea: {
+      left: 30,
+      right: 30,
+      top: 30,
+      bottom: 30,
+    },
   };
 
   roulette_chart = new GoogleCharts.api.visualization.PieChart(
@@ -72,8 +70,8 @@ function drawChart() {
  */
 async function rollBalls(
   balls = 1,
-  intervall = 0.5,
-  iteration = [1, 30]
+  intervall = 0.05,
+  iteration = [1, 100]
 ): Promise<void> {
   let selectedField: fieldNumber | undefined = undefined;
 
@@ -93,9 +91,12 @@ async function rollBalls(
     await (async function loop() {
       for (let j = 0; j < iterations; j++) {
         await delay(intervallSeconds);
-        selectedField = fieldOrder[j];
 
-        roulette_chart.setSelection([{ row: j, column: null }]);
+        selectedField = fieldOrder[j % fieldOrder.length];
+
+        roulette_chart.setSelection([
+          { row: j % fieldOrder.length, column: null },
+        ]);
       }
     })();
   }
@@ -109,24 +110,20 @@ async function rollBalls(
 <style scoped lang="scss">
 .roulette {
   width: 100%;
-  background-color: green;
 
-  &__field {
-    color: white;
-    &--blank {
-      background: rgba(0, 0, 0, 0);
-    }
+  &__action {
+    width: 200px;
+    margin-left: auto;
+    height: 50px;
+    border: 1px solid;
+    border-radius: 4px;
+    text-align: center;
+    background-color: burlywood;
+    font-size: xx-large;
+    font-weight: 600;
 
-    &--red {
-      background: rgba(255, 0, 0, 1);
-    }
-
-    &--black {
-      background: rgba(0, 0, 0, 1);
-    }
-
-    &--highlighted {
-      background-color: gold;
+    &:hover {
+      cursor: pointer;
     }
   }
 }

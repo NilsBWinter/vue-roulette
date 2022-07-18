@@ -58,11 +58,7 @@ export const useGameStore = defineStore({
                 // win
                 if(this.currentSelectedNumber && b.fieldsNumbers.includes(this.currentSelectedNumber)) {
                     this.userCredits += value;
-                } else {
-                    this.userCredits -= b.credit;
-
                 }
-
             })
         }
 
