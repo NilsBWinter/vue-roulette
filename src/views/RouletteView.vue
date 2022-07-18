@@ -13,5 +13,9 @@ import Placing from "../components/Placing.vue";
 <style lang="scss">
 .roulette-view {
   display: flex;
+
+  @media (max-width: 1300px) {
+    display: block;
+  }
 }
 </style>
